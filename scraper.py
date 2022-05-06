@@ -1,26 +1,86 @@
 import requests
+import json
+from bs4 import BeautifulSoup
 
-url = "https://www.ceneo.pl/91714422"
-response = requests.get(url)
+url = "https://www.ceneo.pl/63490289#tab=reviews"
+
+
+
+
+
+
+
+
+
+
+seletors = {
+    "author" : ["span.user-post__author-name"],
+    "recommendation" : ["span.user-post__author-recomendation > em"],
+    "stars" : ["span.user-post__score-count"],
+    "content" : ["div.user-post__text"],
+    "useful" : ["button.vote-yes > span"],
+    "useless" : ["button.vote-no > span"],
+    "publish_date" : ["span.user-post__published > time:nth-child(1)", "datetime"],
+    "purchase_date" : ["span.user-post__published > time:nth-child(2)","datetime"],
+    "pros" : ["div[class$=\"positives\"]~ div.review-feature__item", None, True],
+    "cons" : ["div[class$=\"negatives\"]~ div.review-feature__item", None, True]
+}
 
 print(response.status_code)
+all_opinions = []
+while(url):
+    response = requests.get(url)
+    page = BeautifulSoup(response.text, 'html.parser')
+    opinions = page.select("div.js_product-review")
 
-page = BeautifulSoup(response.text, 'html.parser')
+    for opinion in opinions:
+        single_opinion = {
+            
+        }
+        opinion_id = opinion["data-entry-id"]
+        author = opinion.select_one("span.user-post__author-name").get_text().strip()
+        try:
+            recommendation = opinion.select_one("span.user-post__author-recomendation > em").get_text().strip()
+        except AttributeError:
+            recommendation = None
+        stars = opinion.select_one("span.user-post__score-count").get_text().strip()
+        content = opinion.select_one("div.user-post__text").get_text().strip()
 
-opinions = page.select("div.js_product-review")
-opinion = opinions.pop(0)
-opinion_id = opinion["date-enty-id"]
-author = opinion.select_one("span.user-post__author-name")
-print(author)
-recommendation = opinion.select_one("span.user=post__author-name").get_text().strip()
-stars_amount = opinion.select_one("span.user-post__score-count").get_text().strip()
-content = opinion.select_one("div.user-post__text").get_text().strip()
-opinion_date = opinion.select_one("span.user-post__published > time:nth-child(1)")["datetime"]
-transaction_date = opinion.select_one("span.user-post__published > time:nth-child(2)")["datetime"]
-useful = opinion.select_one("span[id^="votes-yes"] button.vote-yes > span button.vote-yes["data-total-vote"]").get_text().strip()
-useless = opinion.select_one("span[id^="votes-no"] button.vote-no > span button.vote-no["data-total-vote"]").get_text().strip()
+        useful = opinion.select_one("button.vote-yes > span").get_text().strip()
+        useless = opinion.select_one("button.vote-no > span").get_text().strip()
+        publish_date = opinion.select_one("span.user-post__published > time:nth-child(1)")["datetime"]
+        try:
+            purchase_date = opinion.select_one("span.user-post__published > time:nth-child(2)")["datetime"]
+        except TypeError:
+            purchase_date = None
 
-print (reommendation, stars_amount, content, useful, useless, opinion_date, transaction_date, sep="\n")
+        pros = opinion.select("div[class$=\"positives\"]~ div.review-feature__item")
+        pros = [item.get_text().strip() for item in pros]
+        cons = opinion.select("div[class$=\"negatives\"]~ div.review-feature__item")
+        cons = [item.get_text().strip() for item in cons]
+
+        single_opinion = {
+            "opinion_id": opinion_id,
+            "author": author,
+            "recommendation": recommendation,
+            "stars": stars,
+            "content": content,
+            "useful": useful,
+            "useless": useless,
+            "publish_date": publish_date,
+            "purchase_date": purchase_date,
+            "pros": pros,
+            "cons": cons
+        }
+        all_opinions.append(single_opinion)
+
+    try:    
+        url = "https://www.ceneo.pl"+page.select_one("a.pagination__next")["href"]
+    except TypeError:
+        url = None
+
+with open("opinions/63490289.json", "w", encoding="UTF-8") as jf:
+    json.dump(all_opinions, jf, indent=4, ensure_ascii=False)
 
 
 #Komentarz kontrolny

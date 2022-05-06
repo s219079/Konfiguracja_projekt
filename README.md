@@ -14,7 +14,7 @@
 |identyfikator_opnii|div.js_product-review|opinion_id||
 |autor_opnii|span.user-post_author-name|author||
 |rekomendacja|span.user-post__author-recomendation > em|recommendation||
-|liczba_gwiazdek|span.user-post_score-count|stars_amount||
+|liczba_gwiazdek|span.user-post_score-count|stars||
 |tresc_opinii|div.user-post__text|content||
 |lista_zalet|div.review-feature__title--positives~ div.review-feature__item div[class$="positives"]~ div.review-feature__item div.review-feature__col:has(> div[class$="positives"]) > div.review-feature__item|||
 |lista_wad|div.review-feature__title--negatives~ div.review-feature__item div[class$="negatives"]~ div.review-feature__item div.review-feature__col:has(> div[class$="negatives"]) > div.review-feature__item|flaw||
